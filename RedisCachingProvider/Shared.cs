@@ -91,7 +91,7 @@ namespace DotNetNuke.Providers.RedisCachingProvider
             if (string.IsNullOrEmpty(json) || json == "{}")
                 throw new SerializationException();
 
-            return json;// Base64Encode(json);
+            return json;
         }
 
         internal static T DeserializeJSON<T>(string jsonString)
