@@ -86,7 +86,10 @@ namespace DotNetNuke.Providers.RedisCachingProvider
             if (source == null)
                 throw new NullReferenceException();
 
-            string json = JsonConvert.SerializeObject(source);
+            string json = JsonConvert.SerializeObject(source, new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.All
+            });
 
             if (string.IsNullOrEmpty(json) || json == "{}")
                 throw new SerializationException();
@@ -96,7 +99,10 @@ namespace DotNetNuke.Providers.RedisCachingProvider
 
         internal static T DeserializeJSON<T>(string jsonString)
         {
-            T res = JsonConvert.DeserializeObject<T>(jsonString);
+            T res = JsonConvert.DeserializeObject<T>(jsonString, new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto
+            });
             return res;
         }
 
