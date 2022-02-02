@@ -98,17 +98,6 @@ namespace DotNetNuke.Providers.RedisCachingProvider
         {
             T res = JsonConvert.DeserializeObject<T>(Base64Decode(base64String));
             return res;
-
-            byte[] data = Convert.FromBase64String(base64String);
-            using (var stream = new MemoryStream(data))
-            {
-                using (JsonTextReader reader = new JsonTextReader(new StreamReader(stream)))
-                {
-                    JsonSerializer serializer = JsonSerializer.CreateDefault();
-
-                    return serializer.Deserialize<T>(reader);
-                }
-            }
         }
 
         public static string Base64Encode(string plainText)
