@@ -64,12 +64,12 @@ namespace DotNetNuke.Providers.RedisCachingProvider
             }
         }
 
-        internal static T Deserialize<T>(string base64String)
+        internal static T Deserialize<T>(string encodedObject)
         {
-            if(IsBase64String(base64String))
-                return DeserializeBinary<T>(base64String);
+            if(IsBase64String(encodedObject))
+                return DeserializeBinary<T>(encodedObject);
             else // use JSON
-                return DeserializeJSON<T>(base64String);
+                return DeserializeJSON<T>(encodedObject);
         }
 
         /// <summary>
