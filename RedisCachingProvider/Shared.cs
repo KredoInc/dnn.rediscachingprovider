@@ -13,6 +13,7 @@ using StackExchange.Redis;
 using System.Runtime.InteropServices.ComTypes;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace DotNetNuke.Providers.RedisCachingProvider
 {
@@ -51,14 +52,39 @@ namespace DotNetNuke.Providers.RedisCachingProvider
 
         internal static string Serialize(object source)
         {
-            return SerializeJSON(source);
-            //return SerializeBinary(source);
+            // This try..catch should eventually be replaced with pure JSON. Right now this gets to a solution a bit faster with more reliability during the transition.
+            try
+            {
+                return SerializeJSON(source);
+            }
+            catch(Exception ex) // Fallback to binary serialization
+            {
+                Logger.Error(ex);  // Log during dev so we can look further into the exceptions.
+                return SerializeBinary(source);
+            }
         }
 
         internal static T Deserialize<T>(string base64String)
         {
-            return DeserializeJSON<T>(base64String);
-            //return DeserializeBinary<T>(base64String);
+            if(IsBase64String(base64String))
+                return DeserializeBinary<T>(base64String);
+            else // use JSON
+                return DeserializeJSON<T>(base64String);
+        }
+
+        /// <summary>
+        /// Checks if the string is base64 encoded by checking the valid characters in the string in conjunction with the length. If the string ends with = we can be more confident it is base64
+        /// </summary>
+        /// <param name="base64"></param>
+        /// <returns>True if the string is base64</returns>
+        /// <remarks>This aims to be more performant by avoiding a try catch with a conversion, since a try catch is an expensive operation.</remarks>
+        public static bool IsBase64String(string base64String)
+        {
+            if (string.IsNullOrEmpty(base64String))
+                return false;
+
+            base64String = base64String.Trim();
+            return (base64String.Length % 4 == 0) && Regex.IsMatch(base64String, @"^[a-zA-Z0-9\+/]*={0,3}$", RegexOptions.None);
         }
 
         internal static string SerializeBinary(object source)
