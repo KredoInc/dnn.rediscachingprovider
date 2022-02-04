@@ -124,6 +124,10 @@ namespace DotNetNuke.Providers.RedisCachingProvider
 					}
 				}         
 
+				// Expiry has to be a postivie total seconds. If it is less than or equal to 0 then there is no reason to cache this item. Redis will throw a setex error.
+				if(expiry.HasValue && expiry.GetValueOrDefault().TotalSeconds <= 0) 
+					return;
+				
 				if (UseCompression)
 				{
 					var cvalue = Shared.CompressData(value);

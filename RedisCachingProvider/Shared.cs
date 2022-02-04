@@ -114,7 +114,9 @@ namespace DotNetNuke.Providers.RedisCachingProvider
 
             string json = JsonConvert.SerializeObject(source, new JsonSerializerSettings
             {
-                TypeNameHandling = TypeNameHandling.All
+                TypeNameHandling = TypeNameHandling.All,
+                PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                NullValueHandling = NullValueHandling.Ignore
             });
 
             if (string.IsNullOrEmpty(json) || json == "{}")
@@ -127,7 +129,9 @@ namespace DotNetNuke.Providers.RedisCachingProvider
         {
             T res = JsonConvert.DeserializeObject<T>(jsonString, new JsonSerializerSettings
             {
-                TypeNameHandling = TypeNameHandling.Auto
+                TypeNameHandling = TypeNameHandling.Auto,
+                PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                NullValueHandling = NullValueHandling.Ignore
             });
             return res;
         }
