@@ -14,6 +14,7 @@ using System.Runtime.InteropServices.ComTypes;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace DotNetNuke.Providers.RedisCachingProvider
 {
@@ -48,30 +49,34 @@ namespace DotNetNuke.Providers.RedisCachingProvider
             }
         }
 
-
-
         internal static string Serialize(object source)
         {
-            // This try..catch should eventually be replaced with pure JSON. Right now this gets to a solution a bit faster with more reliability during the transition.
-            try
-            {
-                return SerializeJSON(source);
-            }
-            catch(Exception ex) // Fallback to binary serialization
-            {
-                Logger.Error(ex);  // Log during dev so we can look further into the exceptions.
+            // If this is binary serializable go ahead and just serialize to a Base64 string.  This can change once DNN 9.11 is out because DNN 9.11 has implemented the JsonIgnore attributes on its entities.
+            if (IsSerializable(source))
                 return SerializeBinary(source);
-            }
+            else // If not marked as serializable then serialize as json.
+                return SerializeJSON(source);
         }
 
         internal static T Deserialize<T>(string encodedObject)
         {
+            // If this is a base64 string it must have been binary serialized
             if(IsBase64String(encodedObject))
                 return DeserializeBinary<T>(encodedObject);
             else // use JSON
                 return DeserializeJSON<T>(encodedObject);
         }
 
+        /// <summary>
+        /// Check to see if this object is binary serializable
+        /// </summary>
+        /// <param name="source">The object to check</param>
+        /// <returns>True if the object has a Serializable Attribute on the class. False if it does not.</returns>
+        private static bool IsSerializable(object source)
+        {
+            var attribute = source.GetType().GetCustomAttribute<SerializableAttribute>();
+            return (attribute != null);
+        }
         /// <summary>
         /// Checks if the string is base64 encoded by checking the valid characters in the string in conjunction with the length. If the string ends with = we can be more confident it is base64
         /// </summary>
